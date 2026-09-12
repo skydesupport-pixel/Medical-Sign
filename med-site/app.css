@@ -1,0 +1,741 @@
+/* MedSign admin - works in both RTL (Hebrew) and LTR (English) via logical properties */
+
+:root {
+  --bg: #eef2f6;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --ink: #0f172a;
+  --ink-2: #475569;
+  --ink-3: #5b6879;   /* 5.67:1 on white, 5.04:1 on --bg - AA for normal text */
+  --line: #e2e8f0;
+  --accent: #0e7490;
+  --accent-ink: #ffffff;
+  --accent-soft: #ecfeff;
+  --ok: #15803d;
+  --warn: #b45309;
+  --alert: #be123c;
+  --nav: #0b1524;
+  --nav-ink: #cbd5e1;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 8px 24px rgba(15, 23, 42, .06);
+  --font: "Segoe UI", "Noto Sans Hebrew", "Arial Hebrew", Arial, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+/* class-based display rules below would otherwise beat the UA [hidden] rule */
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+/* ---------------- layout ---------------- */
+.app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+.nav {
+  background: var(--nav);
+  color: var(--nav-ink);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+.brand .mark {
+  width: 34px; height: 34px; border-radius: 10px; flex: none;
+  background: linear-gradient(135deg, #06b6d4, #0e7490);
+  display: grid; place-items: center; color: #fff; font-weight: 800;
+}
+.brand b { color: #fff; font-size: 16px; letter-spacing: .2px; display: block; }
+.brand span { font-size: 11.5px; color: #64748b; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 11px; border-radius: 10px;
+  color: var(--nav-ink); background: none; border: 0; width: 100%;
+  cursor: pointer; text-align: start; font-size: 14.5px;
+}
+.nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+.nav-item.active { background: var(--accent); color: #fff; font-weight: 600; }
+.nav-item .ic { width: 20px; text-align: center; font-size: 15px; }
+.nav-item .count { margin-inline-start: auto; font-size: 11.5px; opacity: .7; }
+
+.nav-sep { height: 1px; background: rgba(255,255,255,.09); margin: 12px 6px; }
+.nav-foot {
+  margin-top: auto;
+  font-size: 11.5px;
+  color: #94a3b8;
+  padding: 12px 8px 0;
+  text-align: center;   /* centred under the menu rather than hugging the edge */
+}
+/* the wall clock of the app - readable at a glance, not squinting distance */
+.nav-foot #clock {
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #e2e8f0;
+  letter-spacing: .01em;
+  margin-top: 4px;
+}
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 14px;
+  position: sticky; top: 0; z-index: 20;
+}
+.topbar h1 { margin: 0; font-size: 19px; font-weight: 700; }
+.topbar .sub { color: var(--ink-2); font-size: 13px; }
+.topbar .spacer { flex: 1; }
+
+.content { padding: 22px 24px 60px; }
+
+/* ---------------- pieces ---------------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.card + .card { margin-top: 18px; }
+.card-head {
+  padding: 14px 18px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px;
+}
+.card-head h2 { margin: 0; font-size: 15.5px; font-weight: 700; }
+.card-head .spacer { flex: 1; }
+.card-body { padding: 16px 18px; }
+
+.btn {
+  border: 1px solid var(--line); background: var(--surface);
+  padding: 8px 14px; border-radius: 10px; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); border-color: #cbd5e1; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--alert); border-color: #fecdd3; background: #fff1f2; }
+.btn.danger:hover { background: #ffe4e6; }
+.btn.sm { padding: 5px 10px; font-size: 13px; border-radius: 8px; }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.ghost:hover { background: var(--surface-2); }
+
+.input, select.input, textarea.input {
+  width: 100%; padding: 9px 11px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); outline: none;
+}
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,116,144,.12); }
+textarea.input { min-height: 78px; resize: vertical; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.stat {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 15px 17px; box-shadow: var(--shadow);
+}
+.stat .k { font-size: 12.5px; color: var(--ink-2); }
+.stat .v { font-size: 30px; font-weight: 800; line-height: 1.2; letter-spacing: -.5px; }
+.stat .v small { font-size: 13px; font-weight: 600; color: var(--ink-3); }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 14px; text-align: start; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--ink-3); font-weight: 700; background: var(--surface-2); }
+tbody tr:hover { background: #f9fbfd; }
+td.actions { white-space: nowrap; text-align: end; }
+.table-wrap { overflow-x: auto; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 9px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600;
+  background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-2);
+}
+.tag.ok { background: #f0fdf4; border-color: #bbf7d0; color: var(--ok); }
+.tag.warn { background: #fffbeb; border-color: #fde68a; color: var(--warn); }
+.tag.alert { background: #fff1f2; border-color: #fecdd3; color: var(--alert); }
+.tag .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+.dept-chip { display: inline-flex; align-items: center; gap: 7px; }
+.dept-chip i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+.empty { padding: 34px; text-align: center; color: var(--ink-3); }
+.muted { color: var(--ink-2); }
+.small { font-size: 13px; }
+.mono { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
+
+/* days-of-week picker */
+.days { display: flex; gap: 5px; flex-wrap: wrap; }
+.days label {
+  border: 1px solid var(--line); border-radius: 9px; padding: 6px 11px;
+  cursor: pointer; user-select: none; font-size: 13.5px; background: var(--surface);
+}
+.days input { display: none; }
+.days input:checked + span { color: var(--accent); font-weight: 700; }
+.days label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+
+/* form grid */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field.full { grid-column: 1 / -1; }
+.field > label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+.check { display: flex; align-items: center; gap: 8px; }
+.check input { width: 17px; height: 17px; accent-color: var(--accent); }
+
+/* modal */
+.overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,.5);
+  display: grid; place-items: center; z-index: 100; padding: 20px;
+  backdrop-filter: blur(2px);
+}
+.overlay[hidden] { display: none !important; }
+.modal {
+  background: var(--surface); border-radius: 16px; width: min(680px, 100%);
+  max-height: 90vh; overflow: auto; box-shadow: 0 24px 60px rgba(0,0,0,.3);
+}
+.modal header { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; }
+.modal header h3 { margin: 0; font-size: 16.5px; }
+.modal .body { padding: 18px 20px; }
+.modal footer { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; gap: 10px; justify-content: flex-end; background: var(--surface-2); }
+
+/* sign cards */
+.sign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.sign-card {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.sign-card .top { padding: 14px 16px; display: flex; align-items: start; gap: 10px; }
+.sign-card .type-ic {
+  width: 40px; height: 40px; border-radius: 11px; flex: none;
+  display: grid; place-items: center; font-size: 19px;
+  background: var(--accent-soft); color: var(--accent);
+}
+.sign-card b { display: block; font-size: 15px; }
+/* replaced the address box: a sign means more when you can see what is on it */
+.sign-card .showing {
+  padding: 0 16px 12px;
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.sign-card .showing .pk { color: var(--ink-3); font-size: 12px; }
+.sign-card .showing b { font-size: 14px; color: var(--accent); }
+.sign-card .foot { padding: 10px 16px; background: var(--surface-2); border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; }
+
+.now-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.now-row:last-child { border-bottom: 0; }
+.now-row .rn {
+  width: 52px; height: 42px; border-radius: 10px; flex: none;
+  display: grid; place-items: center; font-weight: 800; font-size: 15px;
+  background: var(--surface-2); border: 1px solid var(--line);
+}
+.now-row .g { flex: 1; min-width: 0; }
+.now-row .t { font-weight: 600; }
+
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.toolbar .grow { flex: 1; min-width: 180px; }
+
+/* toast */
+#toasts { position: fixed; inset-block-end: 20px; inset-inline-end: 20px; display: flex; flex-direction: column; gap: 9px; z-index: 200; }
+.toast {
+  background: var(--nav); color: #fff; padding: 11px 16px; border-radius: 11px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.28); font-size: 14px; max-width: 340px;
+  animation: pop .18s ease-out;
+}
+.toast.err { background: var(--alert); }
+@keyframes pop { from { opacity: 0; transform: translateY(8px); } }
+
+/* login */
+.login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+.login {
+  background: var(--surface); padding: 30px; border-radius: 18px; width: min(380px, 100%);
+  box-shadow: var(--shadow); text-align: center;
+}
+.login .mark {
+  width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 14px;
+  background: linear-gradient(135deg, #06b6d4, #0e7490);
+  display: grid; place-items: center; color: #fff; font-size: 26px;
+}
+
+.log-item { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.log-item:last-child { border: 0; }
+.log-item .when { color: var(--ink-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.log-item .what b { font-weight: 700; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .content { padding: 16px; }
+
+  /* The sidebar becomes a strip of pills across the top. The icons are
+     dropped here on purpose: some of them (✉ ⚙) are rendered as colour
+     emoji by phones while the rest stay plain glyphs, so the row looked
+     mismatched. The labels alone read better at this size. */
+  .nav {
+    position: static; height: auto;
+    flex-direction: row; flex-wrap: wrap;
+    gap: 8px; padding: 14px 14px 12px;
+  }
+  .nav .brand, .nav-foot { width: 100%; }
+  .nav .brand { padding-bottom: 12px; }
+  .nav-sep { display: none; }
+
+  .nav-item {
+    width: auto; flex: 0 0 auto;
+    padding: 9px 15px; border-radius: 999px;
+    background: rgba(255, 255, 255, .06);
+    font-size: 14px; line-height: 1;
+  }
+  .nav-item .ic { display: none; }
+  .nav-item .count { margin-inline-start: 7px; opacity: .8; font-size: 12px; }
+  .nav-item.active { background: var(--accent); color: #fff; }
+
+  .nav-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 2px 0; margin-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+  }
+  /* on a phone the footer is a single row, so the clock sits inline */
+  .nav-foot { text-align: start; }
+  .nav-foot #clock { font-size: 20px; margin-top: 0; }
+}
+
+/* Times, phone numbers and IDs stay LTR even inside Hebrew (RTL) text */
+.mono, .now-row .rn, input[type="time"], .log-item .when {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* departments + their doctors, on the overview */
+.team { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.team:last-child { border-bottom: 0; }
+.team:first-child { padding-top: 0; }
+.team-head { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.team-head i { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+.team-head b { font-size: 15px; }
+.team-docs { display: flex; flex-wrap: wrap; gap: 6px; padding-inline-start: 20px; }
+
+/* access-codes section */
+.notice {
+  background: var(--accent-soft); border: 1px solid #a5f3fc;
+  border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: #155e75;
+}
+.sec-title {
+  font-size: 14px; font-weight: 700; margin: 22px 0 10px;
+  padding-top: 16px; border-top: 1px solid var(--line);
+}
+.reveal { position: relative; }
+.reveal .input { padding-inline-end: 38px; }
+.eye {
+  position: absolute; inset-inline-end: 6px; top: 50%; transform: translateY(-50%);
+  border: 0; background: none; cursor: pointer; font-size: 15px; opacity: .45; padding: 4px;
+}
+.eye:hover, .eye.on { opacity: 1; }
+
+/* login tabs + registration */
+.tabs { display: flex; gap: 6px; background: var(--surface-2); padding: 4px; border-radius: 12px; margin: 14px 0; }
+.tabs[hidden] { display: none !important; }
+.tab {
+  flex: 1; border: 0; background: none; padding: 8px; border-radius: 9px;
+  cursor: pointer; font-weight: 600; font-size: 14px; color: var(--ink-2);
+}
+.tab.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.btn.block { width: 100%; justify-content: center; margin-top: 10px; }
+.code-input { text-align: center; letter-spacing: 4px; font-size: 19px; }
+.login .field { text-align: start; margin-bottom: 10px; }
+
+.code-box {
+  font-size: 34px; font-weight: 800; letter-spacing: 8px;
+  padding: 16px; margin: 12px 0 4px; border-radius: 12px;
+  background: var(--accent-soft); color: var(--accent);
+  border: 2px dashed var(--accent); direction: ltr;
+  font-variant-numeric: tabular-nums;
+}
+.warn-notice { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+
+/* who is signed in */
+.who { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+.who.master { color: var(--accent); }
+.alert-badge {
+  background: var(--alert); color: #fff; border-radius: 999px;
+  padding: 1px 7px; font-weight: 700; opacity: 1 !important;
+}
+.log-item .by { color: var(--ink-3); }
+
+/* a card that needs the admin's attention */
+.card-attention { border-color: #fcd34d; box-shadow: 0 0 0 3px rgba(252, 211, 77, .18), var(--shadow); }
+.card-attention .card-head { background: #fffbeb; border-bottom-color: #fde68a; }
+
+/* my-account summary */
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.profile-grid > div {
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 11px; padding: 10px 13px;
+}
+.profile-grid .pk { display: block; font-size: 12px; color: var(--ink-3); margin-bottom: 2px; }
+.profile-grid b { font-size: 14.5px; }
+
+/* "we are watching for your approval" indicator */
+.waiting-live {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid #fde68a;
+  font-size: 12.5px; color: #92400e;
+}
+.pulse {
+  width: 9px; height: 9px; border-radius: 50%; background: currentColor;
+  flex: none; animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: .25; transform: scale(.85); } 50% { opacity: 1; transform: scale(1); } }
+
+/* ---------------- personal inbox ---------------- */
+.mail-tabs { margin: 0; width: auto; min-width: 220px; }
+.mail-list { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.mail-row {
+  display: grid; grid-template-columns: 26px 150px 1fr auto;
+  align-items: center; gap: 12px;
+  padding: 12px 14px; cursor: pointer; background: var(--surface);
+}
+.mail-row + .mail-row { border-top: 1px solid var(--line); }
+.mail-row:hover { background: var(--surface-2); }
+.mail-row.unread { background: #f0fdff; }
+.mail-row.unread .mail-who, .mail-row.unread .mail-sub b { font-weight: 800; }
+.mail-row.done .mail-sub b { text-decoration: line-through; opacity: .6; }
+.mail-dot { text-align: center; color: var(--ok); font-weight: 800; }
+.dot-new { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.mail-who { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail-sub { min-width: 0; overflow: hidden; }
+.mail-sub b { margin-inline-end: 8px; }
+.mail-prev { color: var(--ink-3); font-size: 13px; }
+.mail-when { color: var(--ink-3); font-size: 12.5px; white-space: nowrap; }
+.mail-body {
+  margin-top: 14px; padding: 14px; border-radius: 12px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  white-space: pre-wrap; line-height: 1.6; min-height: 70px;
+}
+
+/* ---- phone only: the desktop layout is untouched ---- */
+@media (max-width: 720px) {
+  /* A card header is title + tabs + button; on a narrow screen let it wrap
+     instead of crushing everything into one line. */
+  .card-head { flex-wrap: wrap; row-gap: 10px; }
+  .card-head .spacer { display: none; }
+  .mail-tabs { width: 100%; order: 3; }
+  .card-head > .btn { margin-inline-start: auto; }
+
+  /* Two lines per message: who + when, then subject underneath.
+     (The old rule declared 2 columns for 3 children, which pushed the
+     subject into the 22px dot column and wrapped it one letter per line.) */
+  .mail-row {
+    grid-template-columns: 22px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "dot who  when"
+      "sub sub  sub";
+    row-gap: 3px;
+    align-items: center;
+    padding: 12px 12px;
+  }
+  .mail-dot  { grid-area: dot; }
+  .mail-who  { grid-area: who; }
+  .mail-when { grid-area: when; display: block; }
+  .mail-sub  { grid-area: sub; }
+  .mail-sub b { display: block; margin: 0; }
+  .mail-prev {
+    display: block; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Tables become stacked cards on a phone. A 6-column table inside 375px
+     squeezes each cell to a few characters and wraps Hebrew one word per
+     line - unreadable. Each row becomes a card: the first cell is the
+     title, the rest are label/value pairs from the column headers. */
+  .table-wrap table,
+  .table-wrap tbody,
+  .table-wrap tr,
+  .table-wrap td { display: block; width: 100%; }
+
+  .table-wrap thead { display: none; }
+
+  .table-wrap tr {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    padding: 4px 0 6px;
+    overflow: hidden;
+  }
+  .table-wrap tr:hover { background: var(--surface); }
+  .table-wrap tr:last-child { margin-bottom: 0; }
+
+  .table-wrap td {
+    display: flex; align-items: baseline; gap: 10px;
+    border: 0; padding: 5px 14px; text-align: start;
+  }
+  .table-wrap td::before {
+    content: attr(data-label);
+    flex: 0 0 38%;
+    color: var(--ink-3); font-size: 12px; font-weight: 700;
+  }
+
+  /* the first cell is the card's headline, not a label/value pair */
+  .table-wrap td:first-child {
+    display: block; padding: 10px 14px 8px;
+    font-size: 15.5px; line-height: 1.35;
+    border-bottom: 1px solid var(--line); margin-bottom: 4px;
+  }
+  .table-wrap td:first-child::before { content: none; }
+
+  .table-wrap td.actions {
+    justify-content: flex-end; gap: 8px;
+    padding: 8px 14px 4px; margin-top: 4px;
+    border-top: 1px solid var(--line);
+  }
+  .table-wrap td.actions:empty { display: none; }
+  .table-wrap td.actions::before { content: none; }
+}
+
+/* built-in admin permission list */
+.perm-list { margin: 0; padding-inline-start: 20px; color: var(--ink-2); }
+.perm-list li { margin-bottom: 6px; }
+
+/* where a doctor is sitting right now */
+.loc-pill {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  padding: 3px 11px; border-radius: 999px;
+  background: var(--accent-soft); border: 1px solid #a5f3fc; color: #155e75;
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.loc-pill b { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+a.phone { color: var(--accent); text-decoration: none; }
+a.phone:hover { text-decoration: underline; }
+
+/* a calmer table: lighter rules, roomier rows */
+tbody td { padding-top: 13px; padding-bottom: 13px; }
+tbody tr:last-child td { border-bottom: 0; }
+.loc-pill.manual { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.loc-pill .pin { font-size: 11px; }
+
+/* the "forgot my code" contact opens WhatsApp */
+.wa-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 4px; padding: 5px 11px; border-radius: 999px;
+  background: #dcf8c6; border: 1px solid #a5d6a7; color: #14532d;
+  text-decoration: none; font-weight: 700; direction: ltr;
+}
+.wa-link:hover { background: #cdeeb0; }
+.wa-mark { font-size: 12px; letter-spacing: .2px; }
+
+/* ------------------------------------------------------------------ *
+ * Accessibility (IS 5568 / WCAG AA)
+ * ------------------------------------------------------------------ */
+
+/* A keyboard user has to be able to see where they are. :focus-visible
+   means a mouse click does not draw the ring, only Tab does. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible,
+.input:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Dark navigation needs a light ring to stay visible against it. */
+.nav-item:focus-visible,
+.sidebar a:focus-visible,
+.sidebar button:focus-visible {
+  outline: 3px solid #7dd3fc;
+  outline-offset: -3px;
+}
+
+/* Jump straight to the content instead of tabbing through the whole menu.
+   Off-screen until focused, which is the one time it is wanted. */
+.skip-link {
+  position: absolute;
+  inset-inline-start: -9999px;
+  top: 8px;
+  z-index: 200;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus { inset-inline-start: 8px; }
+
+/* Visible only to a screen reader. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Respect "reduce motion" - some people get motion sick, and on a corridor
+   screen the animation earns nothing anyway. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Policy documents in Settings
+ * ------------------------------------------------------------------ */
+.doc {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.doc > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  user-select: none;
+}
+.doc > summary::-webkit-details-marker { display: none; }
+/* the disclosure triangle, drawn so it flips correctly in RTL */
+.doc > summary::before {
+  content: '▸';
+  color: var(--accent);
+  font-size: 13px;
+  transition: transform .15s ease;
+  display: inline-block;
+}
+[dir="rtl"] .doc > summary::before { transform: scaleX(-1); }
+.doc[open] > summary::before { transform: rotate(90deg); }
+[dir="rtl"] .doc[open] > summary::before { transform: rotate(90deg) scaleX(-1); }
+.doc > summary:hover { background: var(--surface); }
+.doc-name { flex: 1; }
+
+.doc-body {
+  padding: 4px 18px 18px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  max-height: 460px;
+  overflow-y: auto;
+}
+.doc-intro {
+  color: var(--ink-2);
+  border-inline-start: 3px solid var(--accent);
+  padding-inline-start: 12px;
+  margin: 16px 0;
+}
+.doc-body section { margin-bottom: 18px; }
+.doc-body h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--accent);
+}
+.doc-body p { margin: 6px 0; color: var(--ink-2); }
+.doc-body ul { margin: 6px 0; padding-inline-start: 20px; }
+.doc-body li { margin: 4px 0; color: var(--ink-2); }
+.doc-actions {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 720px) {
+  .doc-body { max-height: none; padding-inline: 14px; }
+  .doc > summary { flex-wrap: wrap; }
+}
+
+/* the policy links under the sign-in card */
+.login-legal {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.login-legal a, #legalConsent a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.login-legal a:hover, #legalConsent a:hover { color: var(--accent); }
+#legalConsent { margin-top: 8px; }
+
+/* the document title inside <summary> is a real heading, styled flat */
+.doc-name { font-size: 15px; font-weight: 600; margin: 0; }
+
+/* date + optional time, side by side; the date carries the meaning */
+.dt-pair { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; }
+@media (max-width: 720px) {
+  .dt-pair { grid-template-columns: 1fr; }
+}
+
+/* Door screens and floor directories need no settings, so they are a row
+   each rather than a card - there is one per room and that adds up. */
+.screen-list { display: flex; flex-direction: column; gap: 8px; }
+.screen-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.screen-row:hover { background: var(--surface); }
+.sr-name { min-width: 0; }
+/* Plain text, not a link - clicking the name used to navigate away to the
+   screen itself, which is not what a row title looks like it will do. */
+.sr-name-text { display: block; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.sr-showing { min-width: 0; font-size: 13px; }
+.sr-showing .pk { color: var(--ink-3); font-size: 12px; }
+.sr-showing b { color: var(--accent); }
+.sr-act { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+@media (max-width: 860px) {
+  .screen-row { grid-template-columns: 1fr; gap: 8px; }
+  .sr-act { justify-content: flex-start; }
+}
+
+
+/* "רופא עכשיו" - one shape for a doctor, whatever put them in the list.
+   The name is always the same size and weight; only the line under it and
+   the colour of the marker change with why they are there. */
+.who { margin: 2px 0; padding-inline-start: 9px; border-inline-start: 2px solid transparent; }
+.who + .who { margin-top: 6px; }
+.who-name { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
+.who-when { display: block; font-size: 12.5px; color: var(--ink-2); margin-top: 1px; }
+.who-when .tag { font-size: 11px; padding: 1px 7px; }
+.who.is-now { border-inline-start-color: var(--ok); }
+.who.is-soon { border-inline-start-color: var(--warn); }
+/* The marker and the line underneath carry the difference. The name itself
+   never changes size or weight - that was the thing that read as broken. */
+.who.is-roster { border-inline-start-color: var(--line); }
+.who-more { font-size: 12px; color: var(--ink-3); padding-inline-start: 11px; margin-top: 2px; }
